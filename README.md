@@ -9,7 +9,7 @@ stack build
 
 Run all the solutions:
 ```
-stack exec advent-exe
+stack run
 ```
 
 Obtain a REPL:

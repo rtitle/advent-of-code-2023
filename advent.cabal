@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Day1
+      Utils
   other-modules:
       Paths_advent
   autogen-modules:
