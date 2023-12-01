@@ -5,17 +5,16 @@ import Data.Char (isDigit)
 import Data.List (isPrefixOf, tails)
 
 day1Part1 :: String -> Int
-day1Part1 input = sum ns where
-    ls = lines input
-    digits = fmap (filter isDigit) ls
-    firstAndLast = fmap (\s -> [head s, last s]) digits
-    ns = fmap str2Int firstAndLast
+day1Part1 = doDay1 True
 
 day1Part2 :: String -> Int
-day1Part2 input = sum ns where
-    ls = lines input
-    firstAndLast = fmap (\s -> (findFirstNum (tails s)) ++ findFirstNum (reverse . tails $ s)) ls
-    ns = fmap str2Int firstAndLast
+day1Part2 = doDay1 False
+
+doDay1 :: Bool -> String -> Int
+doDay1 part1 input = sum $ fmap (str2Int . firstAndLast) (lines input) where
+    firstAndLast s = if part1 
+        then let d = filter isDigit s in [head d, last d]
+        else let t = tails s in findFirstNum t ++ findFirstNum (reverse t)
 
 str2Int :: String -> Int
 str2Int s = read s :: Int
