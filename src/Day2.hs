@@ -1,6 +1,6 @@
 module Day2 (day2) where
 
-import Control.Monad.RWS (RWS, evalRWS, rws, tell)
+import Control.Monad.RWS (RWS, evalRWS, tell)
 import Data.List.Split (splitOn)
 
 -- overly nested data structure
@@ -38,13 +38,10 @@ cubeExceedsBoundary (Red, n) = n > 12
 cubeExceedsBoundary (Green, n) = n > 13
 cubeExceedsBoundary (Blue, n) = n > 14
 
-rwsPure :: RWS () [Int] () ()
-rwsPure = rws (\_ s -> ((), s, []))
-
 doPart1 :: [Game] -> [Int]
 doPart1 gs = snd $ evalRWS (traverse inner gs) () () where 
     inner :: Game -> RWS () [Int] () ()
-    inner (game, grabs) = if any (any cubeExceedsBoundary) grabs then rwsPure else tell [game]
+    inner (game, grabs) = if any (any cubeExceedsBoundary) grabs then tell [] else tell [game]
 
 doPart2 :: [Game] -> [Int]
 doPart2 gs = fmap inner gs where
