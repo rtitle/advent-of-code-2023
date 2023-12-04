@@ -35,7 +35,7 @@ doPart2 :: [Card] -> Int
 doPart2 cs = sum . fmap snd . M.toList $ finalCards where
     initial = M.fromList . fmap (,1) . fmap cid $ cs
     inner r (Card i w d) = foldr (M.adjust (+ (r M.! i))) r [i+1..i+(numWinner w d)]
-    numWinner w d = length . filter (`elem` w) $ d
+    numWinner w = length . filter (`elem` w)
     finalCards = foldl inner initial cs
 
 str2Int :: String -> Int
