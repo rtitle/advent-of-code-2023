@@ -34,18 +34,17 @@ findSeed n mapping = fromMaybe n . fmap getDest . find srcPred $ mapping where
     srcPred (Mapping _ s r) = n >= s && n <= s + r - 1
     getDest (Mapping d s _) = d + (n - s)
 
-findRange :: SeedRange -> [Mapping] -> [SeedRange]
-findRange initialSeed mapping = unmapped ++ mapped where
+findRange :: [Mapping] -> SeedRange -> [SeedRange]
+findRange mapping initialSeed = unmapped ++ mapped where
     (unmapped, mapped) = foldl inner ([initialSeed], []) mapping
     inner (u, acc) c = foldl combine ([], acc) (fmap (overlap c) u)
     combine (r1, r2) (c1, c2) = (r1 ++ c1, r2 ++ c2)
-    overlap (Mapping md ms mr) seed@(SeedRange s r)
-        | s >= (ms + mr) || ms >= (s + r) = ([seed], [])
+    overlap (Mapping md ms mr) (SeedRange s r)
         | s >= ms && (s + r) <= (ms + mr) = ([], [SeedRange (md + (s - ms)) r])
         | s <= ms && (s + r) >= (ms + mr) = ([SeedRange s (ms - s), SeedRange (ms + mr) (r - (ms + mr - s))], [SeedRange md mr])
         | ms <= s && (ms + mr) > s && (ms + mr) <= (s + r) = ([SeedRange (ms + mr) (r - (ms + mr - s))], [SeedRange (md + (s - ms)) (mr - (s - ms))])
         | ms >= s && ms < (s + r) && (ms + mr) >= (s + r) = ([SeedRange s (ms - s)], [SeedRange md (r - (ms - s))])
-        | otherwise = ([], [])
+        | otherwise = ([SeedRange s r], [])
 
 doPart1 :: [[Mapping]] -> [Int] -> Int
 doPart1 almanac = minimum . fmap findAll where
@@ -53,7 +52,7 @@ doPart1 almanac = minimum . fmap findAll where
 
 doPart2 :: [[Mapping]] -> [SeedRange] -> Int
 doPart2 almanac seeds = minimum . fmap seedSrc $ foldl inner seeds almanac where
-    inner r c = concat $ fmap (\x -> findRange x c) r
+    inner r c = concat $ fmap (findRange c) r
 
 str2Int :: String -> Int
 str2Int s = read s :: Int
