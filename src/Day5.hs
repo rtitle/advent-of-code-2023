@@ -12,6 +12,7 @@ data Mapping = Mapping {
 
 type Seed = Int
 
+-- could maybe have used https://hackage.haskell.org/package/range-0.3.0.2/docs/Data-Range.html
 data SeedRange = SeedRange {
     seedSrc :: Int,
     seedRange :: Int
@@ -46,13 +47,18 @@ findRange mapping initialSeed = unmapped ++ mapped where
         | ms >= s && ms < (s + r) && (ms + mr) >= (s + r) = ([SeedRange s (ms - s)], [SeedRange md (r - (ms - s))])
         | otherwise = ([SeedRange s r], [])
 
-doPart1 :: [[Mapping]] -> [Int] -> Int
+doPart1 :: [[Mapping]] -> [Seed] -> Int
 doPart1 almanac = minimum . fmap findAll where
     findAll n = foldl findSeed n almanac where
 
 doPart2 :: [[Mapping]] -> [SeedRange] -> Int
 doPart2 almanac seeds = minimum . fmap seedSrc $ foldl inner seeds almanac where
     inner r c = concat $ fmap (findRange c) r
+
+-- takes... a while
+_bruteForcePart2JustForKicks :: [[Mapping]] -> [SeedRange] -> Int
+_bruteForcePart2JustForKicks almanac seeds = doPart1 almanac expanded where
+    expanded = concat $ fmap (\(SeedRange s r) -> [s..(s+r-1)]) seeds
 
 str2Int :: String -> Int
 str2Int s = read s :: Int
@@ -65,3 +71,4 @@ day5 input = (part1, part2) where
     mappings = fmap (\n -> parseAlmanac . head . drop n $ ls) [1..7]
     part1 = doPart1 mappings seeds
     part2 = doPart2 mappings seedRanges
+    -- part2 = bruteForcePart2JustForKicks mappings seedRanges
