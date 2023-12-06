@@ -20,11 +20,11 @@ day4 input = (part1, part2) where
 parseLine :: String -> Card
 parseLine s = Card gid (parseNums w) (parseNums d) where
     gameSplit = splitOn ":" s
-    gid = str2Int . drop 5 . head $ gameSplit
+    gid = read @Int . drop 5 . head $ gameSplit
     numberSplit = splitOn "|" . head . drop 1 $ gameSplit
     w = head numberSplit
     d = head . drop 1 $ numberSplit
-    parseNums a = fmap str2Int . filter (not . null) . splitOn " " $ a
+    parseNums a = fmap (read @Int) . filter (not . null) . splitOn " " $ a
 
 doPart1 :: Card -> Int
 doPart1 (Card _ w d) = score . length . filter (`elem` w) $ d where
@@ -37,6 +37,3 @@ doPart2 cs = sum . fmap snd . M.toList $ finalCards where
     inner r (Card i w d) = foldr (M.adjust (+ (r M.! i))) r [i+1..i+(numWinner w d)]
     numWinner w = length . filter (`elem` w)
     finalCards = foldl inner initial cs
-
-str2Int :: String -> Int
-str2Int s = read s :: Int

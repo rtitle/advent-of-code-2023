@@ -22,7 +22,7 @@ processRow part1 grid (j, s) = processCur res where
         if isDigit c
             then (acc, (curNum ++ [c], nub (curAdj ++ findAdjecent i)))
             else (processCur r, ([], []))
-    processCur (acc, (curNum, curAdj)) = foldr (\c r -> M.insertWith (++) c [str2Int curNum] r) acc curAdj
+    processCur (acc, (curNum, curAdj)) = foldr (\c r -> M.insertWith (++) c [read @Int curNum] r) acc curAdj
     findAdjecent i = filter (\(x,y) -> test (safeLookup grid x y)) [(x,y) | x<-[i-1, i, i+1], y<-[j-1, j, j+1]]
     isSymbol c = not (c == '.' || isDigit c)
     isGear c = c == '*'
@@ -32,7 +32,3 @@ safeLookup :: [String] -> Int -> Int -> Char
 safeLookup s x y = s !! (min (lenY-1) (max 0 y)) !! (min (lenX-1) (max 0 x)) where
     lenY = length s
     lenX = length . head $ s 
-
-str2Int :: String -> Int
-str2Int [] = 0
-str2Int s = read s :: Int

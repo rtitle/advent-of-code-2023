@@ -15,9 +15,6 @@ day2 input = (part1, part2) where
     part1 = sum $ doPart1 games
     part2 = sum $ doPart2 games
 
-str2Int :: String -> Int
-str2Int s = read s :: Int
-
 str2Color :: String -> Color
 str2Color "red" = Red
 str2Color "green" = Green
@@ -26,11 +23,11 @@ str2Color _ = Red
 
 parseLine :: String -> Game
 parseLine s = (game, grabs) where
-    [gameSplit1, gameSplit2] = splitOn ":" s
-    game = str2Int . drop 5 $ gameSplit1
-    grabsSplit = splitOn ";" gameSplit2
+    gameSplit = splitOn ":" s
+    game = read @Int . drop 5 $ (gameSplit !! 0)
+    grabsSplit = splitOn ";" (gameSplit !! 1)
     cubesSplit = fmap (splitOn ",") grabsSplit
-    parseCube cubeStr = let [_, n, c] = splitOn " " cubeStr in (str2Color c, str2Int n)
+    parseCube cubeStr = let a = splitOn " " cubeStr in (str2Color (a !! 2), read @Int (a !! 1))
     grabs = fmap (fmap parseCube) cubesSplit
 
 cubeExceedsBoundary :: Cube -> Bool

@@ -37,6 +37,8 @@ ghc-options:
 - -Wpartial-fields
 - -Wredundant-constraints
 
+default-extensions: TypeApplications
+
 library:
   source-dirs: src
 

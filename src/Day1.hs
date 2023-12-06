@@ -8,13 +8,10 @@ day1 :: String -> (Int, Int)
 day1 = liftA2 (,) (doDay1 True) (doDay1 False)
 
 doDay1 :: Bool -> String -> Int
-doDay1 part1 input = sum $ fmap (str2Int . firstAndLast) (lines input) where
+doDay1 part1 input = sum $ fmap (read @Int . firstAndLast) (lines input) where
     firstAndLast s = if part1 
         then let d = filter isDigit s in [head d, last d]
         else let t = init . tails $ s in [findFirstNum t, findFirstNum (reverse t)]
-
-str2Int :: String -> Int
-str2Int s = read s :: Int
 
 findFirstNum :: [String] -> Char
 findFirstNum [] = '0'

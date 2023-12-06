@@ -19,7 +19,7 @@ data SeedRange = SeedRange {
 } deriving (Eq, Show)
 
 parseSeeds :: [String] -> [Seed]
-parseSeeds = fmap str2Int . splitOn " " . drop 7 . head
+parseSeeds = fmap (read @Int) . splitOn " " . drop 7 . head
 
 parseSeedRanges :: [String] -> [SeedRange]
 parseSeedRanges = fmap parseSeed . chunksOf 2 . parseSeeds where
@@ -27,7 +27,7 @@ parseSeedRanges = fmap parseSeed . chunksOf 2 . parseSeeds where
 
 parseAlmanac :: [String] -> [Mapping]
 parseAlmanac = fmap (parseMapping . split) . drop 1 where 
-    split s = fmap str2Int . splitOn " " $ s
+    split s = fmap (read @Int) . splitOn " " $ s
     parseMapping a = Mapping (a !! 0) (a !! 1) (a !! 2)
 
 findSeed :: Seed -> [Mapping] -> Seed
@@ -59,9 +59,6 @@ doPart2 almanac seeds = minimum . fmap seedSrc $ foldl inner seeds almanac where
 _bruteForcePart2JustForKicks :: [[Mapping]] -> [SeedRange] -> Int
 _bruteForcePart2JustForKicks almanac seeds = doPart1 almanac expanded where
     expanded = concat $ fmap (\(SeedRange s r) -> [s..(s+r-1)]) seeds
-
-str2Int :: String -> Int
-str2Int s = read s :: Int
 
 day5 :: String -> (Int, Int)
 day5 input = (part1, part2) where
