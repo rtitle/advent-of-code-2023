@@ -15,9 +15,9 @@ waysToWin (time, distance) = length . filter (> distance) . fmap computeDistance
     computeDistance timeSpent = (time - timeSpent) * timeSpent
 
 day6 :: String -> (Int, Int)
-day6 input = (part1, part2) where
+day6 input = (part1, part2BruteForce) where
     ls = lines input
     racesPart1 = parseRaces True ls
     racesPart2 = parseRaces False ls
     part1 = product . fmap waysToWin $ racesPart1
-    part2 = waysToWin . head $ racesPart2
+    part2BruteForce = waysToWin . head $ racesPart2
