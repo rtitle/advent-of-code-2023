@@ -1,6 +1,7 @@
 module Utils (runDay) where
 
--- TODO: read and cache input from site?
+-- Data files are not checked in to git per Advent of Code instructions.
+-- TODO: add ability to download data files.
 getInput :: Int -> IO String
 getInput n = readFile $ "./data/day" ++ (show n) ++ ".txt"
 

@@ -19,7 +19,7 @@ waysToWin2 :: (Int, Int) -> Int
 waysToWin2 (time, distance) = abs (fst ans - snd ans) - 1 where
     inner = (time^(2 :: Int)) - 4 * distance
     part = (sqrt (fromIntegral inner)) / (-2 :: Float)
-    ans = (-time + ceiling part, -time - floor part) 
+    ans = (-time + round part, -time - floor part) 
 
 day6 :: String -> (Int, Int)
 day6 input = (part1, part2) where

@@ -25,6 +25,7 @@ dependencies:
 - split
 - mtl
 - containers
+- hspec
 
 ghc-options:
 - -Wall
