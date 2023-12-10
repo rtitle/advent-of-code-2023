@@ -10,6 +10,7 @@ import Day6 (day6)
 import Day7 (day7)
 import Day8 (day8)
 import Day9 (day9)
+import Day10 (day10)
 
 main :: IO ()
 main = hspec $ do
@@ -22,6 +23,7 @@ main = hspec $ do
     testDay 7 day7 (6440, 5905)
     _testDay 8 day8 ("day8-p1.txt", Just "day8-p2.txt") (6, 6)
     testDay 9 day9 (114, 2)
+    _testDay 10 day10 ("day10-p1.txt", Just "day10-p2.txt") (8, 10)
 
 testDay :: Int -> (String -> (Int, Int)) -> (Int, Int) -> Spec
 testDay n day (p1, p2) = _testDay n day ("day" ++ (show n) ++ ".txt", Nothing) (p1, p2)
