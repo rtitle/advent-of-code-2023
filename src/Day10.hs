@@ -38,15 +38,15 @@ possibleStartConnections :: PipeMap -> Coord -> [Coord]
 possibleStartConnections m startPos = filter (\s -> startPos `elem` (connections m s)) (surrounding startPos) where
     surrounding (x,y) = [(x, y-1), (x, y+1), (x-1, y), (x+1, y)]
 
-follow :: PipeMap -> Coord -> [Coord]
-follow m start = snd $ evalRWS (inner start (head (getNext start start))) () () where
-    inner :: Coord -> Coord -> RWS () [Coord] () ()
-    inner prev next
-      | next == start = tell []
+follow :: PipeMap -> Coord -> Coord -> [Coord]
+follow m start next = snd $ evalRWS (inner next (getNext start next)) () () where
+    inner :: Coord -> [Coord] -> RWS () [Coord] () ()
+    inner p [n]
+      | n == start = tell [n]
       | otherwise = do
-        tell [next]
-        let n = getNext prev next
-        if n == [] then tell [] else inner next (head n)
+        tell [n]
+        inner n (getNext p n)
+    inner _ _ = tell []
     getNext prev cur = filter (\c -> c /= prev) $ (connections m cur)
 
 enclosed :: PipeMap -> [String] -> [Coord] -> [Coord]
@@ -71,7 +71,6 @@ day10 input = (part1, part2) where
     ls = lines input
     (startPos, pipeMap) = parseMap ls
     p = possibleStartConnections pipeMap startPos
-    path = (head p) : (follow pipeMap (head p))
-    -- path = (last p) : (follow pipeMap (last p))
+    path = (head p) : (follow pipeMap startPos (head p))
     part1 = (length path) `div` 2
     part2 = length $ enclosed pipeMap ls path
