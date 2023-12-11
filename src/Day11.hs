@@ -5,10 +5,10 @@ import Data.List (tails)
 type Coord = (Int, Int)
 
 parseMap :: [String] -> [Coord]
-parseMap ls = foldr parseRow [] (zip [0..] ls) where
-    parseRow (y, s) r = r ++ foldr (parse y) [] (zip [0..] s)
-    parse y (x, '#') r = (x,y):r
-    parse _ _ r = r
+parseMap ls = do
+    (y, s) <- zip [0..] ls
+    (x, c) <- zip [0..] s
+    if c == '#' then [(x,y)] else []
 
 empty :: [String] -> [Coord] -> ([Int], [Int])
 empty ls m = (emptyCols, emptyRows) where
