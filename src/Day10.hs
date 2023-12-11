@@ -1,6 +1,7 @@
 module Day10 (day10) where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Control.Monad.RWS (RWS, evalRWS, execRWS, put, tell)
 
 data Pipe = NS | EW | NE | NW | SE | SW | Start deriving (Eq, Show)
@@ -49,10 +50,10 @@ follow m start next = snd $ evalRWS (inner next (getNext start next)) () () wher
     inner _ _ = tell []
     getNext prev cur = filter (\c -> c /= prev) $ (connections m cur)
 
-enclosed :: PipeMap -> [String] -> [Coord] -> [Coord]
+enclosed :: PipeMap -> [String] -> S.Set Coord -> [Coord]
 enclosed m ls cs = foldr inner [] [0..lenY] where
     inner c r = r ++ (snd (foldr (inner2 c) ((0 :: Int, []), []) [0..lenX]))
-    inner2 y x ((n, s), r) = if (x,y) `notElem` cs
+    inner2 y x ((n, s), r) = if (x,y) `S.notMember` cs
         then ((n,[]), if n `mod` 2 == 1 then (x,y):r else r)
         else if (m M.! (x,y)) == EW then ((n,s), r)
         else if (m M.! (x,y)) == NS then ((n+1, []), r)
@@ -73,4 +74,4 @@ day10 input = (part1, part2) where
     p = possibleStartConnections pipeMap startPos
     path = (head p) : (follow pipeMap startPos (head p))
     part1 = (length path) `div` 2
-    part2 = length $ enclosed pipeMap ls path
+    part2 = length $ enclosed pipeMap ls (S.fromList path)
