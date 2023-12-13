@@ -28,10 +28,11 @@ library
       Day1
       Day10
       Day11
-      Day12
+<<<<<<< HEAD
       Day13
-      Day14
-      Day15
+=======
+      Day12
+>>>>>>> b3fe3cb (Day 12 WIP)
       Day2
       Day3
       Day4
