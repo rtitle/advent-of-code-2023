@@ -13,6 +13,7 @@ import Day9 (day9)
 import Day10 (day10)
 import Day11 (day11)
 import Day13 (day13)
+import Day14 (day14)
 
 main :: IO ()
 main = do
@@ -28,3 +29,4 @@ main = do
     runDay 10 day10
     runDay 11 (day11 False)
     runDay 13 day13
+    runDay 14 day14
