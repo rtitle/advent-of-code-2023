@@ -27,9 +27,15 @@ parseGrid = fmap (fmap parseTile) where
 initial :: Beam
 initial = ((0,0), E)
 
--- todo memoize
-simulate :: Grid -> [Pos]
-simulate g = snd $ evalRWS (inner [initial] S.empty) () () where
+initials :: Grid -> [Beam]
+initials g = v ++ h where
+    v = concatMap (\y -> [((0,y), E), ((lenX-1,y), W)]) [0..lenY-1]
+    h = concatMap (\x -> [((x,0), S), ((x,lenY-1), N)]) [0..lenX-1]
+    lenY = length g
+    lenX = length . head $ g
+
+simulate :: Grid -> [Beam] -> Int
+simulate g is = maximum . fmap (\i -> length . nub . snd $ evalRWS (inner [i] S.empty) () ()) $ is where
     inner :: [Beam] -> Cache -> RWS () [Pos] () ()
     inner [] _ = return ()
     inner bs cache = do
@@ -62,5 +68,7 @@ test :: IO ()
 test = do
     input <- readFile "data/day16.txt"
     let grid = parseGrid (lines input)
-    let part1 = length . nub $ simulate grid
+    let part1 = simulate grid [initial]
+    let part2 = simulate grid (initials grid)
     print part1
+    print part2
