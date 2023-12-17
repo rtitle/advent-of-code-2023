@@ -1,20 +1,13 @@
-module Day16 (test) where
+module Day16 (day16) where
 
-import Control.Monad.RWS (RWS, evalRWS, execRWS, put, tell)
-import Data.List (nub)
+import Control.Monad.RWS (RWS, evalRWS, get, put, tell)
 import qualified Data.Set as S
 
 data Tile = Empty | FMirror | BMirror | HSplit | VSplit deriving (Eq, Show)
-
 type Grid = [[Tile]]
-
 type Pos = (Int, Int)
-
 data Direction = N | S | E | W deriving (Eq, Show, Ord)
-
 type Beam = (Pos, Direction)
-
-type Cache = S.Set Beam
 
 parseGrid :: [String] -> Grid
 parseGrid = fmap (fmap parseTile) where
@@ -35,14 +28,15 @@ initials g = v ++ h where
     lenX = length . head $ g
 
 simulate :: Grid -> [Beam] -> Int
-simulate g is = maximum . fmap (\i -> length . nub . snd $ evalRWS (inner [i] S.empty) () ()) $ is where
-    inner :: [Beam] -> Cache -> RWS () [Pos] () ()
-    inner [] _ = return ()
-    inner bs cache = do
-        tell (fmap fst bs)
+simulate g = maximum . fmap (\i -> S.size . snd $ evalRWS (inner [i]) () S.empty) where
+    inner :: [Beam] -> RWS () (S.Set Pos) (S.Set Beam) ()
+    inner [] = return ()
+    inner bs = do
+        tell (S.fromList . fmap fst $ bs)
+        cache <- get
         let next = filter (`S.notMember` cache) . concat . fmap step $ bs
-        let newCache = foldr (S.insert) cache next
-        inner next newCache
+        put (foldr (S.insert) cache next)
+        inner next
     step b@((x,y), d) = case (g !! y !! x) of
         Empty -> zip (move b) [d]
         FMirror -> let newD = fmirror d in zip (move ((x,y), newD)) [newD]
@@ -64,11 +58,8 @@ simulate g is = maximum . fmap (\i -> length . nub . snd $ evalRWS (inner [i] S.
     lenX = length . head $ g
     lenY = length g
 
-test :: IO ()
-test = do
-    input <- readFile "data/day16.txt"
-    let grid = parseGrid (lines input)
-    let part1 = simulate grid [initial]
-    let part2 = simulate grid (initials grid)
-    print part1
-    print part2
+day16 :: String -> (Int, Int)
+day16 input = (part1, part2) where
+    grid = parseGrid (lines input)
+    part1 = simulate grid [initial]
+    part2 = simulate grid (initials grid)
