@@ -2,15 +2,16 @@ module Day16 (day16) where
 
 import Control.Monad.RWS (RWS, evalRWS, get, put, tell)
 import qualified Data.Set as S
+import qualified Data.Vector as V
 
 data Tile = Empty | FMirror | BMirror | HSplit | VSplit deriving (Eq, Show)
-type Grid = [[Tile]]
+type Grid = V.Vector (V.Vector Tile)
 type Pos = (Int, Int)
 data Direction = N | S | E | W deriving (Eq, Show, Ord)
 type Beam = (Pos, Direction)
 
 parseGrid :: [String] -> Grid
-parseGrid = fmap (fmap parseTile) where
+parseGrid = V.fromList . fmap (V.fromList . fmap parseTile) where
     parseTile '/' = FMirror
     parseTile '\\' = BMirror
     parseTile '-' = HSplit
@@ -24,8 +25,8 @@ initials :: Grid -> [Beam]
 initials g = v ++ h where
     v = concatMap (\y -> [((0,y), E), ((lenX-1,y), W)]) [0..lenY-1]
     h = concatMap (\x -> [((x,0), S), ((x,lenY-1), N)]) [0..lenX-1]
-    lenY = length g
-    lenX = length . head $ g
+    lenY = V.length g
+    lenX = V.length . V.head $ g
 
 simulate :: Grid -> [Beam] -> Int
 simulate g = maximum . fmap (\i -> S.size . snd $ evalRWS (inner [i]) () S.empty) where
@@ -37,7 +38,7 @@ simulate g = maximum . fmap (\i -> S.size . snd $ evalRWS (inner [i]) () S.empty
         let next = filter (`S.notMember` cache) . concat . fmap step $ bs
         put (foldr (S.insert) cache next)
         inner next
-    step b@((x,y), d) = case (g !! y !! x) of
+    step b@((x,y), d) = case (g V.! y V.! x) of
         Empty -> zip (move b) [d]
         FMirror -> let newD = fmirror d in zip (move ((x,y), newD)) [newD]
         BMirror -> let newD = bmirror d in zip (move ((x,y), newD)) [newD]
@@ -55,7 +56,7 @@ simulate g = maximum . fmap (\i -> S.size . snd $ evalRWS (inner [i]) () S.empty
     bmirror S = E 
     bmirror E = S
     bmirror W = N
-    lenX = length . head $ g
+    lenX = length . V.head $ g
     lenY = length g
 
 day16 :: String -> (Int, Int)
