@@ -27,6 +27,7 @@ dependencies:
 - containers
 - hspec
 - vector
+- heap
 
 ghc-options:
 - -Wall
