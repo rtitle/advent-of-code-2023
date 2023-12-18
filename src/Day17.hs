@@ -1,11 +1,7 @@
-module Day17 (test) where
+module Day17 (day17) where
 
 import Control.Monad.RWS (RWS, execRWS, get, put, tell)
 import Data.Char (digitToInt)
-import Data.Maybe (listToMaybe)
-import Data.List (sortBy)
-import Data.Ord (comparing)
-import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Vector as V
 import qualified Data.Heap as H
@@ -37,7 +33,6 @@ getNeigbors lenX lenY (TraveledNode (x,y) t d) = concatMap ns ds where
 
 getNeigborsPart2 :: Int -> Int -> TraveledNode -> [TraveledNode]
 getNeigborsPart2 lenX lenY (TraveledNode (x,y) t d) = concatMap ns ds where
-    allDirs = dirs d
     ds = if t == 10 then filter (/=d) (dirs d) else dirs d
     ns newD = fmap (\(a,b) -> (TraveledNode (a,b) (if newD == d && ((x,y)/=(0,0)) then t+1 else 4) newD)) (safeNeighbor lenX lenY (x,y) newD (if newD == d && ((x,y)/=(0,0)) then 1 else 4))
 
@@ -56,7 +51,7 @@ safeNeighbor lenX lenY (x,y) d n
   | otherwise = []
 
 getWeight :: Grid -> TraveledNode -> Int
-getWeight g (TraveledNode (x,y) t d) = g V.! y V.! x
+getWeight g (TraveledNode (x,y) _ _) = g V.! y V.! x
 
 getWeightPart2 :: Grid -> TraveledNode -> Int
 getWeightPart2 g (TraveledNode (x,y) t d) = if t == 4 then cur + prev else cur where
@@ -82,12 +77,8 @@ dijkstra part1 g = minimum . snd $ execRWS (inner 0 initialNode) () initialState
     lenX = V.length . V.head $ g
 
 
-test :: IO ()
-test = do 
-    input <- readFile "data/day17.txt"
-    let grid = parseGrid (lines input)
-    let part1 = dijkstra True grid
-    print part1
-    let part2 = dijkstra False grid
-    print part2
-
+day17 :: String -> (Int, Int)
+day17 input = (part1, part2) where
+    grid = parseGrid (lines input)
+    part1 = dijkstra True grid
+    part2 = dijkstra False grid
