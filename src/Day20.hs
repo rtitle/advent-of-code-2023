@@ -1,11 +1,11 @@
 module Day20 (test) where
 
 import Control.Monad (void)
-import Control.Monad.RWS (RWS, runRWS, evalRWS, get, put, tell)
+import Control.Monad.RWS (RWS, evalRWS, get, put, tell)
 import Data.Either (fromRight)
 import Data.Maybe (fromMaybe)
 import Text.Parsec 
-import Text.Parsec.String (Parser)
+-- import Text.Parsec.String (Parser)
 import qualified Data.Map as M
 
 data Pulse = High | Low deriving (Eq,Show)
@@ -36,7 +36,6 @@ parseModule s = fromRight M.empty $ parse p "" s where
 
 sendPulse :: Modules -> String -> String -> Pulse -> ([(Pulse, String, String)], Modules)
 sendPulse ms n input p = fromMaybe ([], ms) . fmap inner $ M.lookup n ms where
-    myModule = ms M.! n
     inner (Broadcaster ts) = (fmap (\t -> (Low,n,t)) ts, ms)
     inner (FlipFlop b ts)
       | p == High = ([], ms)
@@ -46,19 +45,20 @@ sendPulse ms n input p = fromMaybe ([], ms) . fmap inner $ M.lookup n ms where
         if (all (==High) . fmap snd . M.toList $ updatedState)
             then (fmap (\t -> (Low,n,t)) ts, M.insert n (Conjunction updatedState ts) ms)
             else (fmap (\t -> (High,n,t)) ts, M.insert n (Conjunction updatedState ts) ms)
+    inner _ = ([], ms)
 
 initialConjunctionState :: Modules -> Modules
 initialConjunctionState m = updated where
     updated = M.fromList . fmap (\(k,v) -> (k, updateConj k v)) . M.toList $ m
-    updateConj n (Conjunction mp ts) = Conjunction (M.fromList . fmap (\a -> (a, Low)) $ process M.! n) ts
-    updateConj n m = m
+    updateConj n (Conjunction _ ts) = Conjunction (M.fromList . fmap (\a -> (a, Low)) $ process M.! n) ts
+    updateConj _ m' = m'
     process = foldr inner M.empty (M.toList m)
     inner (k,v) r = M.unionWith (++) r (M.fromList (fmap (\c -> (c,[k])) (conjunctionTargets v)))
     conjunctionTargets (Conjunction _ ts) = filter (\t -> t `elem` allConjuctionNames) ts
     conjunctionTargets (Broadcaster ts) = filter (\t -> t `elem` allConjuctionNames) ts
     conjunctionTargets (FlipFlop _ ts) = filter (\t -> t `elem` allConjuctionNames) ts
     conjunctionTargets _ = []
-    allConjuctionNames = fmap fst . filter (\(k,v) -> isConjunction v) $ (M.toList m) 
+    allConjuctionNames = fmap fst . filter (\(_,v) -> isConjunction v) $ (M.toList m) 
     isConjunction (Conjunction _ _) = True
     isConjunction _ = False
 
