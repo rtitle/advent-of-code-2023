@@ -28,6 +28,8 @@ dependencies:
 - hspec
 - vector
 - heap
+- monad-loops
+- parsec
 
 ghc-options:
 - -Wall

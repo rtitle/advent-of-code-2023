@@ -18,6 +18,8 @@ import Day14 (day14)
 import Day15 (day15)
 import Day16 (day16)
 -- import Day17 (day17)
+-- import Day18 (test)
+import Day19 (day19)
 
 main :: IO ()
 main = do
@@ -38,3 +40,4 @@ main = do
     runDay 15 day15
     runDay 16 day16
     -- runDay 17 day17
+    runDay 19 day19
