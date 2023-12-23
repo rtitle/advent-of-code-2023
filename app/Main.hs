@@ -21,7 +21,8 @@ import Utils (runDay)
 -- -- import Day18 (test)
 -- import Day19 (day19)
 -- import Day20 (test)
-import Day21 (test)
+-- import Day21 (test)
+import Day22 (test)
 
 main :: IO ()
 main = test
