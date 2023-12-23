@@ -58,32 +58,32 @@ bfs n g = last . snd $ evalRWS (inner 0 [findStart g]) () () where
         tell [length next]
         inner (c+1) next
 
--- type State = ((M.Map (Int, Int) [Int]), (S.Set (Int, Int)))
-
--- bfs2 :: Int -> Garden -> Int
--- bfs2 n g = sum . fmap (\(_, a) -> head a) . M.toList . fst . fst $ execRWS (inner 0 [((findStart g),(0,0))]) () (M.empty, S.empty) where
--- -- bfs2 n g =  fst $ execRWS (inner 0 [((findStart g),(0,0))]) () (M.empty, S.empty) where
---     inner :: Int -> [Coord2] -> RWS () () State ()
---     inner c cur
---       | c == n = return ()
---       | otherwise = do
---         (historyMap, curCycles) <- get
---         let next = filter (\(_,n) -> n `S.notMember` curCycles) . nub . concatMap (findAdjacent2 g) $ cur
---         let nextGroup = M.fromList $ fmap (\a -> (snd (head a), [length a])) (groupBy ((==) `on` snd) (sortBy (comparing snd) next))
---         let newHistoryMap = M.unionWith (++) nextGroup historyMap
---         let (newHistoryMapCycleChecked, newCycles) = foldr (\(c', is) (h, cc) -> let gp = getPeriodic is in if (length gp) /= 2 then (h,cc) else (M.insert c' (if c `mod` 2 == n `mod` 2 then reverse gp else gp) h, S.insert c' cc)) (newHistoryMap, curCycles) (M.toList newHistoryMap)
---         put (newHistoryMapCycleChecked, newCycles)
---         inner (c+1) next
+type State = ((M.Map (Int, Int) [Int]), (S.Set (Int, Int)))
 
 bfs2 :: Int -> Garden -> Int
-bfs2 n g = last . snd $ evalRWS (inner 0 [((findStart g),(0,0))]) () () where
-    inner :: Int -> [Coord2] -> RWS () [Int] () ()
+bfs2 n g = sum . fmap (\(_, a) -> head a) . M.toList . fst . fst $ execRWS (inner 0 [((findStart g),(0,0))]) () (M.empty, S.empty) where
+-- bfs2 n g =  fst $ execRWS (inner 0 [((findStart g),(0,0))]) () (M.empty, S.empty) where
+    inner :: Int -> [Coord2] -> RWS () () State ()
     inner c cur
       | c == n = return ()
       | otherwise = do
-        let next = nub . concatMap (findAdjacent2 g) $ cur
-        tell [length next]
+        (historyMap, curCycles) <- get
+        let next = filter (\(_,n) -> n `S.notMember` curCycles) . nub . concatMap (findAdjacent2 g) $ cur
+        let nextGroup = M.fromList $ fmap (\a -> (snd (head a), [length a])) (groupBy ((==) `on` snd) (sortBy (comparing snd) next))
+        let newHistoryMap = M.unionWith (++) nextGroup historyMap
+        let (newHistoryMapCycleChecked, newCycles) = foldr (\(c', is) (h, cc) -> let gp = getPeriodic is in if (length gp) /= 2 then (h,cc) else (M.insert c' (if c `mod` 2 == n `mod` 2 then reverse gp else gp) h, S.insert c' cc)) (newHistoryMap, curCycles) (M.toList newHistoryMap)
+        put (newHistoryMapCycleChecked, newCycles)
         inner (c+1) next
+
+-- bfs2 :: Int -> Garden -> Int
+-- bfs2 n g = last . snd $ evalRWS (inner 0 [((findStart g),(0,0))]) () () where
+--     inner :: Int -> [Coord2] -> RWS () [Int] () ()
+--     inner c cur
+--       | c == n = return ()
+--       | otherwise = do
+--         let next = nub . concatMap (findAdjacent2 g) $ cur
+--         tell [length next]
+--         inner (c+1) next
     
 getPeriodic :: [Int] -> [Int]
 getPeriodic is = maximum $ (inner 1) where
@@ -98,29 +98,54 @@ test = do
     let garden = parseGarden (lines input)
     let part1 = bfs 64 garden 
     print part1
-    let l = length garden
+    -- let x = 202300
+    -- let part2 = 14590 * x^2 - 14486 * x + 3587
+    -- let part2 = 14590 * x^2 + 14694 * x + 3691
+
+
+    -- print part2
+
+    -- let x = 520
+    -- let part2 = (185 * x^2)/2 - (159 * x)/2 + 50
+    -- print part2
+
+
+
+    -- let l = length garden
+    -- print l
+    -- let doubleGarden = garden V.++ garden
+    -- let x = bfs 100 doubleGarden
+    -- print x 
+    -- let quadGarden = doubleGarden V.++ doubleGarden
+    -- let y = bfs 100 quadGarden
+    -- print y
+    -- let sixGarden = doubleGarden V.++ doubleGarden V.++ doubleGarden
+    -- let z = bfs 100 sixGarden
+    -- print z
+
     -- let y = bfs2 400 garden
     -- print (snd y)
     -- let res = sum . fmap (\(_, a) -> head a) $ M.toList (fst (fst (x)))
     -- print res
     -- print (getPeriodic [4])
     -- 65, 196, 327
-    print l 
-    -- let x = bfs2 65 garden
-    -- let x2 = bfs2 196 garden
-    -- let x3 = bfs2 327 garden
+    -- print l 
+    let x = bfs2 65 garden
+    let x2 = bfs2 131 garden
+    let x3 = bfs2 262 garden
+    let x3 = bfs2 393 garden
 
-    -- -- let x = bfs2 10 garden
-    -- -- let x2 = bfs2 50 garden
-    -- -- let x3 = bfs2 100 garden
+    -- -- -- -- let x = bfs2 10 garden
+    -- -- -- -- let x2 = bfs2 50 garden
+    -- -- -- -- let x3 = bfs2 100 garden
 
-    -- print x
-    -- print x2
-    -- print x3
+    print x
+    print x2
+    print x3
 
 
-    let part2 = 14590 * (26501365^2) - 14486*26501365 + 3587
-    print part2
+    -- let part2 = 14590 * (26501365^2) - 14486*26501365 + 3587
+    -- print part2
 
     -- print part2
 
