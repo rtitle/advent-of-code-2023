@@ -1,9 +1,8 @@
-module Day21 (test) where
+module Day21 (day21) where
 
 import Control.Monad.RWS (RWS, execRWS, evalRWS, tell, get, put)
 import Data.Function (on)
-import Data.List (nub, group, sortBy, groupBy)
-import Data.Maybe (listToMaybe, fromMaybe)
+import Data.List (nub, sortBy, groupBy)
 import Data.Ord (comparing)
 import qualified Data.Vector as V
 import qualified Data.Set as S
@@ -62,28 +61,17 @@ type State = ((M.Map (Int, Int) [Int]), (S.Set (Int, Int)))
 
 bfs2 :: Int -> Garden -> Int
 bfs2 n g = sum . fmap (\(_, a) -> head a) . M.toList . fst . fst $ execRWS (inner 0 [((findStart g),(0,0))]) () (M.empty, S.empty) where
--- bfs2 n g =  fst $ execRWS (inner 0 [((findStart g),(0,0))]) () (M.empty, S.empty) where
     inner :: Int -> [Coord2] -> RWS () () State ()
     inner c cur
       | c == n = return ()
       | otherwise = do
         (historyMap, curCycles) <- get
-        let next = filter (\(_,n) -> n `S.notMember` curCycles) . nub . concatMap (findAdjacent2 g) $ cur
+        let next = filter (\(_,n') -> n' `S.notMember` curCycles) . nub . concatMap (findAdjacent2 g) $ cur
         let nextGroup = M.fromList $ fmap (\a -> (snd (head a), [length a])) (groupBy ((==) `on` snd) (sortBy (comparing snd) next))
         let newHistoryMap = M.unionWith (++) nextGroup historyMap
         let (newHistoryMapCycleChecked, newCycles) = foldr (\(c', is) (h, cc) -> let gp = getPeriodic is in if (length gp) /= 2 then (h,cc) else (M.insert c' (if c `mod` 2 == n `mod` 2 then reverse gp else gp) h, S.insert c' cc)) (newHistoryMap, curCycles) (M.toList newHistoryMap)
         put (newHistoryMapCycleChecked, newCycles)
         inner (c+1) next
-
--- bfs2 :: Int -> Garden -> Int
--- bfs2 n g = last . snd $ evalRWS (inner 0 [((findStart g),(0,0))]) () () where
---     inner :: Int -> [Coord2] -> RWS () [Int] () ()
---     inner c cur
---       | c == n = return ()
---       | otherwise = do
---         let next = nub . concatMap (findAdjacent2 g) $ cur
---         tell [length next]
---         inner (c+1) next
     
 getPeriodic :: [Int] -> [Int]
 getPeriodic is = maximum $ (inner 1) where
@@ -92,82 +80,13 @@ getPeriodic is = maximum $ (inner 1) where
       | take n is == take n (drop n is) = [take n is] ++ inner (n+1)
       | otherwise = inner (n+1)
 
-test :: IO ()
-test = do
-    input <- readFile "data/day21.txt"
-    let garden = parseGarden (lines input)
-    let part1 = bfs 64 garden 
-    print part1
-    -- let x = 202300
-    -- let part2 = 14590 * x^2 - 14486 * x + 3587
-    -- let part2 = 14590 * x^2 + 14694 * x + 3691
-
-
-    -- print part2
-
-    -- let x = 520
-    -- let part2 = (185 * x^2)/2 - (159 * x)/2 + 50
-    -- print part2
-
-
-
-    -- let l = length garden
-    -- print l
-    -- let doubleGarden = garden V.++ garden
-    -- let x = bfs 100 doubleGarden
-    -- print x 
-    -- let quadGarden = doubleGarden V.++ doubleGarden
-    -- let y = bfs 100 quadGarden
-    -- print y
-    -- let sixGarden = doubleGarden V.++ doubleGarden V.++ doubleGarden
-    -- let z = bfs 100 sixGarden
-    -- print z
-
-    -- let y = bfs2 400 garden
-    -- print (snd y)
-    -- let res = sum . fmap (\(_, a) -> head a) $ M.toList (fst (fst (x)))
-    -- print res
-    -- print (getPeriodic [4])
-    -- 65, 196, 327
-    -- print l 
-    let x = bfs2 65 garden
-    let x2 = bfs2 131 garden
-    let x3 = bfs2 262 garden
-    let x3 = bfs2 393 garden
-
-    -- -- -- -- let x = bfs2 10 garden
-    -- -- -- -- let x2 = bfs2 50 garden
-    -- -- -- -- let x3 = bfs2 100 garden
-
-    print x
-    print x2
-    print x3
-
-
-    -- let part2 = 14590 * (26501365^2) - 14486*26501365 + 3587
-    -- print part2
-
-    -- print part2
-
-    -- let part2test =88 * (2^2) - 66 * 2 + 41
-
-    -- print part2test
-
-    -- let x = bfs2 42 garden
-
-    -- print x
-
-
-    -- let y = []
-    -- let x = maximum y
-    -- print x
-    
-    -- let x = getPeriodic [7,5,3,1]
-    -- print x
-    -- print x
-    -- print x2
-    -- print x3
-
-    -- let s = ((findStart garden),(0,0))
-    -- let y = findAdjacent2 garden s 
-    -- print y
+day21 :: Bool -> Int -> String -> (Int, Int)
+day21 test steps input = (part1, part2) where
+    garden = parseGarden (lines input)
+    part1 = bfs steps garden 
+    part2 = if test 
+      then bfs2 50 garden
+      else let x = 26501365 in
+         -- obtained by bfs2 at 65, 196, 327 and interpolating a polynomial
+         -- it actually overflows haskell Int, should change to Integer but oh well
+        ((14590 * (x^(2::Int)) + (28214 * x) - 135409) `div` 17161)

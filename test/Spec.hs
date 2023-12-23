@@ -19,6 +19,7 @@ import Day15 (day15)
 import Day16 (day16)
 import Day17 (day17)
 import Day19 (day19)
+import Day21 (day21)
 import Day22 (day22)
 
 main :: IO ()
@@ -41,6 +42,7 @@ main = hspec $ do
     testDay 16 day16 (46, 51)
     testDay 17 day17 (102, 94)
     testDay 19 day19 (19114, 167409079868000)
+    testDay 21 (day21 True 6) (16, 1594)
     testDay 22 day22 (5,7)
 
 testDay :: Int -> (String -> (Int, Int)) -> (Int, Int) -> Spec
