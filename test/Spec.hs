@@ -19,6 +19,7 @@ import Day15 (day15)
 import Day16 (day16)
 import Day17 (day17)
 import Day19 (day19)
+import Day22 (day22)
 
 main :: IO ()
 main = hspec $ do
@@ -40,6 +41,7 @@ main = hspec $ do
     testDay 16 day16 (46, 51)
     testDay 17 day17 (102, 94)
     testDay 19 day19 (19114, 167409079868000)
+    testDay 22 day22 (5,7)
 
 testDay :: Int -> (String -> (Int, Int)) -> (Int, Int) -> Spec
 testDay n day (p1, p2) = _testDay n day ("day" ++ (show n) ++ ".txt", Nothing) (p1, p2)

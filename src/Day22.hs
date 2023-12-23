@@ -1,10 +1,12 @@
-module Day22 (test) where
+module Day22 (day22) where
 
-import Data.List ((\\))
+import Data.List ((\\), delete)
 import Data.List.Split (splitOn)
+import qualified Data.Set as S
 
 type Coord3 = (Int, Int, Int)
 type Brick = (Coord3, Coord3)
+type TaggedBrick = (Brick, Int)
 
 parseBrick :: String -> Brick
 parseBrick s = let sp = fmap parseCoord . splitOn "~" $ s in (sp !! 0, sp !! 1) where
@@ -43,16 +45,34 @@ simulate (b:bs) n
         else 
             simulate (bs ++ [b']) 0
 
+simulate2 :: [TaggedBrick] -> Int -> Int -> S.Set Int -> S.Set Int
+simulate2 [] _ _ _ = S.empty
+simulate2 ((b,t):bs) mn n fallen
+  | n == length ((b,t):bs) = fallen
+  | (bottom b) <= mn = simulate2 (bs ++ [(b,t)]) mn (n+1) fallen
+  | otherwise = 
+    let b' = fall b in
+        if any (\a -> overlap (fst a) b') bs then
+            simulate2 (bs ++ [(b,t)]) mn (n+1) fallen
+        else 
+            simulate2 (bs ++ [(b',t)]) mn 0 (S.insert t fallen)
+
 doPart1 :: [Brick] -> Int
 doPart1 bs = length (bs \\ res) where
     res = foldl inner [] bs 
     inner r c = let allUnder = filter (\a -> (top a) == (bottom c) - 1 && overlapXy c a) bs in
         if (length allUnder) == 1 then r ++ allUnder else r
 
-test :: IO ()
-test = do
-    input <- readFile "data/day22.txt"
-    let bricks = fmap parseBrick (lines input)
-    let fallen = simulate bricks 0
-    let part1 = doPart1 fallen
-    print part1
+doPart2 :: [Brick] -> Int
+doPart2 bs = foldr inner 0 tagBricks where
+    inner c r = r + S.size (simulate2 (del c) (top (fst c)) 0 S.empty)
+    tagBricks = zip bs [0..]
+    -- onlyAbove (b,_) tbs = filter (\(a,_) -> bottom a >= top b) tbs
+    del b = delete b tagBricks
+
+day22 :: String -> (Int, Int)
+day22 input = (part1, part2) where
+    bricks = fmap parseBrick (lines input)
+    fallen = simulate bricks 0
+    part1 = doPart1 fallen
+    part2 = doPart2 fallen
