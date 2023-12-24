@@ -1,12 +1,9 @@
-module Day18 (test) where
+module Day18 (day18) where
 
-import Control.Monad.Loops (iterateUntilM)
-import Control.Monad.RWS (RWS, runRWS, evalRWS, get, put, tell, execRWS)
+import Control.Monad.RWS (RWS, evalRWS, get, put, tell, execRWS)
 import Data.Char (digitToInt)
-import Data.Function (on)
-import Data.List (groupBy, nub, sort)
+import Data.List (nub)
 import Data.List.Split (splitOn)
-import Data.Maybe (fromMaybe)
 import qualified Data.Set as S
 import Numeric (readHex)
 
@@ -67,7 +64,7 @@ flood h = part1 . length . snd $ evalRWS (inner initial) () S.empty where
         let next = filter (`S.notMember` seen) [(x+1,y), (x-1,y), (x,y-1), (x,y+1)]
         let newSeen = foldr (S.insert) (S.insert (x,y) seen) next
         put newSeen
-        traverse inner next
+        _ <- traverse inner next
         return ()
     minx = (minimum (fmap fst h)) - 2
     maxx = (maximum (fmap fst h)) + 2
@@ -85,21 +82,21 @@ getDir (x1, y1) (x2, y2)
 
 -- use a better data structure for this than list
 clockwise :: Hole -> Int
-clockwise h = sum . snd $ execRWS (inner) () h where
+clockwise h = sum . snd $ execRWS inner () h where
     inner :: RWS () [Int] Hole ()
     inner = do
-        state <- get
-        if null state then return () else case (process state) of 
+        state <- fmap collapse get
+        if null state || (length state < 4) then return () else case (process state) of 
             Just (newPoint, area) -> do
                 tell [area]
-                let newState = nub ((drop 4 state) ++ [head state, newPoint, head (drop 3 state)])
+                let newState = (drop 4 state) ++ [head state, newPoint, head (drop 3 state)]
                 if isSquare newState
                     then tell [squareArea newState]
                     else ((put newState) >> inner)
             Nothing -> do
                 put $ (tail state) ++ [head state]
                 inner
-    process (a@(ax,ay):b@(bx,by):c@(cx,cy):d@(dx,dy):hs) = 
+    process (a@(ax,ay):b@(bx,by):c@(_,cy):d@(dx,dy):_) = 
         let dirs = [(getDir a b), (getDir b c), (getDir c d)] in 
             case (dirs) of 
                 [R,D,L] -> let newX = max ax dx 
@@ -113,7 +110,7 @@ clockwise h = sum . snd $ execRWS (inner) () h where
                                 Just ((newX, newY), (ax - dx + 1) * (by - newY))
                 [U,R,D] -> let newY = min ay dy 
                                newX = if ay < dy then dx else ax in
-                                Just ((newX, newY), (dx - ax + 1) * (newY - cy))
+                                Just ((newX, newY), (dx - ax + 1) * (newY - by))
                 _ -> Nothing
     process _ = Nothing
     isSquare hole = let minX = minimum . fmap fst $ hole
@@ -126,63 +123,18 @@ clockwise h = sum . snd $ execRWS (inner) () h where
                           minY = minimum . fmap snd $ hole
                           maxY = maximum . fmap snd $ hole in 
                             (maxX - minX + 1) * (maxY - minY + 1)
+    collapse (a@(ax,ay):b@(bx,by):c@(cx,cy):xs)
+      | ax == bx && bx == cx = [a, c] ++ collapse xs
+      | ay == by && by == cy = [a, c] ++ collapse xs
+      | otherwise = [a,b,c] ++ collapse xs
+    collapse xs = xs
 
-test :: IO ()
-test = do
-    input <- readFile "test/data/day18.txt"
-    let is = parseInstructions (lines input)
-    let hole = nub $ foldl applyInstruction initialHole is
-    -- let part1 = flood hole
-    -- print part1
-    let is2 = parseInstructionsPart2 (lines input)
-    let hole2 = [(0,0)] ++ (init . reverse . nub $ foldl applyInstructionPart2 initialHole is2)
-
-    -- print hole2
-    let part2 = clockwise hole2
-    -- print "======"
-    print part2
-    -- let a = clockwise hole2 1
-    -- let b = clockwise (fst a) 1
-    -- let c = clockwise (fst b) 1
-    -- let d = clockwise (fst c) 1 
-    -- let e = clockwise (fst d) 1
-    -- let f = clockwise (fst e) 1
-    -- let g = clockwise (fst f) 1
-    -- let h = clockwise (fst g) 1
-    -- let i = clockwise (fst h) 1
-    -- let j = clockwise (fst i) 1
-    -- let k = clockwise (fst j) 1
-    -- let l = clockwise (fst k) 1
-    -- let m = clockwise (fst l) 1
-    -- print a 
-    -- print b
-    -- print c
-    -- print d
-    -- print e
-    -- print f
-    -- print g
-    -- print h
-    -- print i
-    -- print j
-    -- print j
-    -- print k
-    -- print l
-    -- print m
-
-
-
-
-    -- let is2 = parseInstructionsPart2 (lines input)
-    -- let hole2 = [(0,0)] ++ (init . reverse . nub $ foldl applyInstructionPart2 initialHole is)
-    -- -- let hole2 = [(0,0), (6,0), (6,5), (4,5), (4,2), (0,2)]
-    -- -- let test2 = [(0,0),(4,0),(4,2),(0,2)]
-    -- -- let test3 = [(0,0),(0,0)]
-    -- -- let test4 = [(0,0)]
-
-    -- -- let test = [(0,0),(461937,0),(461937,56407), (0, 56407)]
-    -- -- let test = [(0,0), (1,0), (1,1), (2,1), (2,2), (0,2)]
-
-    -- print hole2
-    -- let part2 = clockwise hole2
-    -- print part2
-    -- print ((461937+1) * (56407+1))
+day18 :: String -> (Int, Int)
+day18 input = (part1, part2) where
+    is = parseInstructions (lines input)
+    hole = nub $ foldl applyInstruction initialHole is
+    part1 = flood hole
+    is2 = parseInstructionsPart2 (lines input)
+    hole2 = [(0,0)] ++ (init . reverse . nub $ foldl applyInstructionPart2 initialHole is2)
+    part2 = clockwise hole2
+    
