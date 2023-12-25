@@ -85,7 +85,8 @@ clockwise :: Hole -> Int
 clockwise h = sum . snd $ execRWS inner () h where
     inner :: RWS () [Int] Hole ()
     inner = do
-        state <- fmap collapse get
+        -- state <- fmap (collapse 0) get
+        state <- get
         if null state || (length state < 4) then return () else case (process state) of 
             Just (newPoint, area) -> do
                 tell [area]
@@ -123,11 +124,12 @@ clockwise h = sum . snd $ execRWS inner () h where
                           minY = minimum . fmap snd $ hole
                           maxY = maximum . fmap snd $ hole in 
                             (maxX - minX + 1) * (maxY - minY + 1)
-    collapse (a@(ax,ay):b@(bx,by):c@(cx,cy):xs)
-      | ax == bx && bx == cx = [a, c] ++ collapse xs
-      | ay == by && by == cy = [a, c] ++ collapse xs
-      | otherwise = [a,b,c] ++ collapse xs
-    collapse xs = xs
+    collapse n (a@(ax,ay):b@(bx,by):c@(cx,cy):xs)
+      | n > length xs = (a:b:c:xs)
+      | ax == bx && bx == cx = [a, c] ++ collapse (n+1) (c:xs)
+      | ay == by && by == cy = [a, c] ++ collapse (n+1) (c:xs)
+      | otherwise = [a,b,c] ++ collapse (n+1) (b:c:xs)
+    collapse _ xs = xs
 
 day18 :: String -> (Int, Int)
 day18 input = (part1, part2) where
@@ -136,5 +138,6 @@ day18 input = (part1, part2) where
     part1 = flood hole
     is2 = parseInstructionsPart2 (lines input)
     hole2 = [(0,0)] ++ (init . reverse . nub $ foldl applyInstructionPart2 initialHole is2)
+    -- hole2 = nub $ foldl applyInstructionPart2 initialHole is2
     part2 = clockwise hole2
     

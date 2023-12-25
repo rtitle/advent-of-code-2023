@@ -30,6 +30,7 @@ dependencies:
 - heap
 - monad-loops
 - parsec
+- linearEqSolver
 
 ghc-options:
 - -Wall
