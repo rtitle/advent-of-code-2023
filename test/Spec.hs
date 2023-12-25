@@ -24,6 +24,7 @@ import Day21 (day21)
 import Day22 (day22)
 import Day23 (day23)
 import Day24 (day24)
+import Day25 (day25)
 
 main :: IO ()
 main = hspec $ do
@@ -50,6 +51,7 @@ main = hspec $ do
     testDay 22 day22 (5,7)
     testDay 23 day23 (94, 154)
     testDay 24 (day24 True) (2, 47)
+    testDay 25 (day25 True) (54, 0)
 
 testDay :: Int -> (String -> (Int, Int)) -> (Int, Int) -> Spec
 testDay n day (p1, p2) = _testDay n day ("day" ++ (show n) ++ ".txt", Nothing) (p1, p2)

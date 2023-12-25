@@ -25,6 +25,7 @@ import Day21 (day21)
 import Day22 (day22)
 import Day23 (day23)
 import Day24 (day24)
+import Day25 (day25)
 
 main :: IO ()
 main = do
@@ -52,3 +53,4 @@ main = do
     runDay 22 day22
     runDay 23 day23
     runDay 24 (day24 False)
+    runDay 25 (day25 False)
