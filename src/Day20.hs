@@ -1,11 +1,10 @@
-module Day20 (test) where
+module Day20 (day20) where
 
 import Control.Monad (void)
 import Control.Monad.RWS (RWS, evalRWS, get, put, tell)
 import Data.Either (fromRight)
 import Data.Maybe (fromMaybe)
 import Text.Parsec 
--- import Text.Parsec.String (Parser)
 import qualified Data.Map as M
 
 data Pulse = High | Low deriving (Eq,Show)
@@ -78,6 +77,23 @@ simulate ms = total . snd $ evalRWS (inner 0) () ([(Low, "button", "broadcaster"
                 put (xs ++ nextPulses, nextModules)
                 inner n
 
+simulateUntil :: Modules -> ((Pulse, String, String) -> Bool) -> Int
+simulateUntil ms mpred = fst $ evalRWS (inner 1) () ([(Low, "button", "broadcaster")], ms) where
+    inner :: Int -> RWS () [(Int, Int)] ([(Pulse, String, String)], Modules) Int
+    inner n = do
+        (q, curModules) <- get
+        case (q) of 
+            [] -> do
+                put ([(Low, "button", "broadcaster")], curModules)
+                inner (n+1)
+            ((p,prev,s):xs) -> do
+                if mpred (p,prev,s)
+                    then return n
+                    else do
+                        let (nextPulses, nextModules) = sendPulse curModules s prev p
+                        put (xs ++ nextPulses, nextModules)
+                        inner n
+
 total :: [(Int, Int)] -> Int
 total xs = a * b where
     a = sumFst xs
@@ -85,9 +101,11 @@ total xs = a * b where
     sumFst = sum . fmap fst
     sumSnd = sum . fmap snd
 
-test :: IO ()
-test = do
-    input <- readFile "data/day20.txt"
-    let modules = initialConjunctionState . M.unions . fmap parseModule $ (lines input)
-    let part1 = simulate modules
-    print part1
+day20 :: Bool -> String -> (Int, Int)
+day20 test input = (part1, part2) where 
+    modules = initialConjunctionState . M.unions . fmap parseModule $ (lines input)
+    part1 = simulate modules
+    critical = ["tr", "xm", "dr", "nh"]
+    sim = fmap (\c -> simulateUntil modules (\(p,prev,s) -> prev == c && s == "dh" && p == High)) critical
+    part2 = if test then 0 else product sim
+

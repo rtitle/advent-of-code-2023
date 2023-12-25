@@ -20,7 +20,7 @@ import Day16 (day16)
 import Day17 (day17)
 import Day18 (day18)
 import Day19 (day19)
--- import Day20 (test)
+import Day20 (day20)
 import Day21 (day21)
 import Day22 (day22)
 import Day23 (day23)
@@ -48,7 +48,7 @@ main = do
     -- runDay 17 day17 -- slow
     -- runDay 18 day18 -- slow
     runDay 19 day19
-    -- todo 20
+    runDay 20 (day20 False)
     runDay 21 (day21 False 64)
     runDay 22 day22
     runDay 23 day23
